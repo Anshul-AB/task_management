@@ -1,8 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { db } from "../config/firebase.js";
+require("dotenv").config();
 
-const JWT_SECRET = "SUPER_SECRET_KEY";
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const signup = async (req, res) => {
   try {
