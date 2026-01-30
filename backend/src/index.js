@@ -5,7 +5,10 @@ import taskRoutes from "./routes/taskRoutes.js";
 
 const app = express();
 app.use(cors({
-    origin: "http://localhost:5173",
+     origin: [
+      "http://localhost:5173",
+      "https://task-management-two-lovat.vercel.app/login",
+    ],
     credentials: true,
 }));
 app.use(express.json());
