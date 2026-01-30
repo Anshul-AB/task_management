@@ -4,13 +4,21 @@ import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 
 const app = express();
-app.use(cors({
-     origin: [
+
+app.use(
+  cors({
+    origin: [
       "http://localhost:5173",
-      "https://task-management-two-lovat.vercel.app/login",
+      "https://task-management-two-lovat.vercel.app"
     ],
-    credentials: true,
-}));
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
+  })
+);
+
+app.options("*", cors());
+
 app.use(express.json());
 
 app.use("/auth", authRoutes);
