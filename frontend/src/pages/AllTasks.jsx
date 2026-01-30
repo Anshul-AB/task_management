@@ -4,7 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import Sidebar from "../components/Sidebar";
 import StatusBadge from "../components/StatusBadge";
 import CreateTaskModal from "../components/CreateTaskModal";
-
+import UpdateStatusModal from "../components/UpdateStatusModal";
+import TaskDetails from "../components/TaskDetails";
 
 const filters = ["All", "Pending", "Completed", "In Progress"];
 
@@ -13,6 +14,8 @@ const AllTasks = () => {
   const [tasks, setTasks] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
   const [showModal, setShowModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -27,6 +30,15 @@ const AllTasks = () => {
     activeFilter === "All"
       ? tasks
       : tasks.filter((t) => t.status === activeFilter);
+
+  const updateStatus = async (taskId, status) => {
+    try {
+      await api.patch(`/tasks/${taskId}/status`, { status });
+      fetchTasks();
+    } catch (err) {
+      console.error("Failed to update status", err);
+    }
+  };
 
   return (
     <div className="flex">
@@ -99,17 +111,36 @@ const AllTasks = () => {
                   <td className="p-3">{task.title}</td>
                   <td className="p-3">{task.assignedUserId || "-"}</td>
                   <td className="p-3">
-                    <StatusBadge status={task.status} />
+                    {user.role === "user" ? (
+                      <select
+                        value={task.status}
+                        onChange={(e) => updateStatus(task.id, e.target.value)}
+                        className="border px-3 py-1 rounded text-sm"
+                      >
+                        <option>Pending</option>
+                        <option>In Progress</option>
+                        <option>Completed</option>
+                      </select>
+                    ) : (
+                      <StatusBadge status={task.status} />
+                    )}
                   </td>
+
                   <td className="p-3 text-gray-500">
-                    {task.createdAt?.seconds
-                      ? new Date(
-                          task.createdAt.seconds * 1000,
-                        ).toLocaleDateString()
+                    {task.createdAt
+                      ? task.createdAt.seconds
+                        ? new Date(
+                            task.createdAt.seconds * 1000,
+                          ).toLocaleDateString()
+                        : new Date(task.createdAt).toLocaleDateString()
                       : "-"}
                   </td>
+
                   <td className="p-3">
-                    <button className="text-sm px-3 py-1 bg-gray-100 rounded">
+                    <button
+                      onClick={() => setSelectedTask(task)}
+                      className="text-sm px-3 py-1 bg-gray-100 rounded"
+                    >
                       View
                     </button>
                   </td>
@@ -125,12 +156,27 @@ const AllTasks = () => {
               )}
             </tbody>
           </table>
+          {showStatusModal && (
+            <UpdateStatusModal
+              task={selectedTask}
+              onClose={() => setShowStatusModal(false)}
+              onSaved={fetchTasks}
+            />
+          )}
         </div>
 
         {showModal && (
           <CreateTaskModal
             onClose={() => setShowModal(false)}
             onCreated={fetchTasks}
+          />
+        )}
+
+        {selectedTask && (
+          <TaskDetails
+            task={selectedTask}
+            onClose={() => setSelectedTask(null)}
+            onUpdate={() => setShowStatusModal(true)}
           />
         )}
       </div>

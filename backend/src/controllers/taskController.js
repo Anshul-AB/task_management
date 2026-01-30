@@ -8,7 +8,7 @@ export const createTask = async (req, res) => {
     description,
     status: "Pending",
     assignedUserId,
-    createdAt: new Date(),
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 
   await db.collection("tasks").add(task);
