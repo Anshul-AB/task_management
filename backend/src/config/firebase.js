@@ -11,9 +11,18 @@ if (process.env.NODE_ENV === "production") {
     FIREBASE_PRIVATE_KEY,
   } = process.env;
 
-  if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
-    throw new Error("Missing Firebase environment variables");
-  }
+  // if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
+  //   throw new Error("Missing Firebase environment variables");
+  // }
+
+  console.log("ENV DEBUG", {
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
+  FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY
+    ? "SET"
+    : "MISSING",
+});
+
 
   credential = admin.credential.cert({
     projectId: FIREBASE_PROJECT_ID,
