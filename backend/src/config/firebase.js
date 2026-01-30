@@ -1,6 +1,6 @@
 import admin from "firebase-admin";
 import fs from "fs";
-require("dotenv").config();
+import "dotenv/config";
 
 let credential;
 
