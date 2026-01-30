@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
-const CreateTaskModal = ({ onClose, onCreated }) => {
+const CreateTaskModal = ({ onClose, onCreated, task }) => {
+  const isEdit = Boolean(task);
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [users, setUsers] = useState([]);
@@ -10,6 +12,14 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setDescription(task.description);
+      setAssignedUserId(task.assignedUserId);
+    }
+  }, [task]);
 
   const fetchUsers = async () => {
     try {
@@ -23,11 +33,13 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await api.post("/tasks", {
-      title,
-      description,
-      assignedUserId,
-    });
+    const payload = { title, description, assignedUserId };
+
+    if (isEdit) {
+      await api.put(`/tasks/${task.id}`, payload);
+    } else {
+      await api.post("/tasks", payload);
+    }
 
     onCreated();
     onClose();
@@ -35,16 +47,13 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
-      {/* Modal */}
       <div className="relative bg-white w-full max-w-md rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Create Task</h2>
+          <h2 className="text-lg font-semibold">
+            {isEdit ? "Edit Task" : "Create Task"}
+          </h2>
           <button onClick={onClose} className="text-gray-400">✕</button>
         </div>
 
@@ -53,7 +62,6 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
             <label className="text-sm font-medium">Task title</label>
             <input
               className="w-full mt-1 border px-3 py-2 rounded"
-              placeholder="Enter the task title"
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
@@ -64,7 +72,6 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
             <label className="text-sm font-medium">Description</label>
             <textarea
               className="w-full mt-1 border px-3 py-2 rounded"
-              placeholder="Briefly describe what needs to be done"
               value={description}
               onChange={e => setDescription(e.target.value)}
               required
@@ -100,7 +107,7 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
               type="submit"
               className="px-4 py-2 rounded bg-primary text-white"
             >
-              Create Task
+              {isEdit ? "Save Changes" : "Create Task"}
             </button>
           </div>
         </form>

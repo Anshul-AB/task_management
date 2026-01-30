@@ -13,9 +13,11 @@ const AllTasks = () => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All");
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -39,6 +41,25 @@ const AllTasks = () => {
       console.error("Failed to update status", err);
     }
   };
+
+ const handleDeleteTask = async (id) => {
+  try {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this task?"
+    );
+    if (!confirmed) return;
+
+    await api.delete(`/tasks/${id}`);
+
+    setSelectedTask(null);
+    fetchTasks();
+  } catch (err) {
+    console.error("DELETE ERROR:", err.response || err);
+    alert(err.response?.data?.message || "Failed to delete task");
+  }
+};
+
+
 
   return (
     <div className="flex">
@@ -67,7 +88,10 @@ const AllTasks = () => {
 
           {user.role === "admin" && (
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => {
+                setEditingTask(null);
+                setShowForm(true);
+              }}
               className="bg-primary text-white px-4 py-2 rounded"
             >
               Create Task
@@ -165,21 +189,32 @@ const AllTasks = () => {
           )}
         </div>
 
-        {showModal && (
+      
+
+        {showForm && (
           <CreateTaskModal
-            onClose={() => setShowModal(false)}
+            task={editingTask}
+            onClose={() => {
+              setShowForm(false);
+              setEditingTask(null);
+            }}
             onCreated={fetchTasks}
           />
         )}
+      </div>
 
         {selectedTask && (
           <TaskDetails
             task={selectedTask}
             onClose={() => setSelectedTask(null)}
-            onUpdate={() => setShowStatusModal(true)}
+            onUpdateStatus={() => setShowStatusModal(true)}
+            onEdit={() => {
+              setEditingTask(selectedTask);
+              setShowForm(true);
+            }}
+             onDelete={() => handleDeleteTask(selectedTask.id)}
           />
         )}
-      </div>
     </div>
   );
 };
